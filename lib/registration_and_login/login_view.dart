@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:voltaccess/registration_and_login/register_view.dart';
-
+import 'package:voltaccess/registration_and_login/home_page.dart';
 class LoginView extends StatefulWidget {
   final String title;
 
@@ -67,28 +67,27 @@ class _LoginViewState extends State<LoginView> {
             const SizedBox(height: 16),  // Odstęp między polami
             // Przycisk logowania
             ElevatedButton(
-              onPressed: () {
-                final email = _email.text;
-                final password = _password.text;
+            onPressed: () {
+              final email = _email.text;
+              final password = _password.text;
 
-                if (email == "test@example.com" && password == "password123") {
-                  // Symulacja udanego logowania
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("Login successful!"),
-                    ),
-                  );
-                } else {
-                  // Symulacja nieudanego logowania
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("Invalid email or password."),
-                    ),
-                  );
-                }
-              },
-              child: const Text('Login'),
-            ),
+              if (email == "test@example.com" && password == "password123") {
+                // Symulacja udanego logowania: Przejście do HomePage
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const HomePage()),
+                );
+              } else {
+                // Symulacja nieudanego logowania
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text("Invalid email or password."),
+                  ),
+                );
+              }
+            },
+            child: const Text('Login'),
+          ),
             const SizedBox(height: 20),  // Odstęp między przyciskami
             // Przycisk rejestracji
             ElevatedButton(
