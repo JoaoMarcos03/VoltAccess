@@ -6,6 +6,7 @@ import 'services/car_service.dart';
 import 'services/rental_service.dart';
 import 'screens/car_rental_screen.dart';
 import 'widgets/rental_overlay.dart';
+import 'widgets/photo_check_widget.dart';
 
 /// Main screen showing available cars on map and handling rental interactions
 class RentingCarsPage extends StatefulWidget {
@@ -87,13 +88,23 @@ class _RentingCarsPageState extends State<RentingCarsPage> {
       RentalService rentalService, bool isCurrentCar, bool isActiveRental) {
     return [
       if (!isNearby)
-        const Text('Get closer to rent this car', style: TextStyle(color: Colors.red))
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text('Get closer to rent this car', 
+              style: TextStyle(color: Colors.red)),
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Close'),
+            ),
+          ],
+        )
       else if (!rentalService.isRenting)
         Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
             ElevatedButton(
-              onPressed: () => rentalService.startRental(car['id']),
+              onPressed: () => _startRentalProcess(context, car),
               child: const Text('Start Rental'),
             ),
             const SizedBox(width: 8),
@@ -104,28 +115,61 @@ class _RentingCarsPageState extends State<RentingCarsPage> {
           ],
         )
       else if (isCurrentCar)
-        Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            ElevatedButton(
-              onPressed: () {
-                final seconds = rentalService.elapsedSeconds;
-                final cost = rentalService.endRental();
-                _showRentalSummary(context, cost, seconds);
-              },
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              child: const Text('End Rental'),
-            ),
-            if (!isActiveRental)
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Close'),
-              ),
-          ],
+        ElevatedButton(
+          onPressed: () => _endRentalProcess(context, car['id']),
+          style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+          child: const Text('End Rental'),
         )
       else
-        Text('Another car is currently being rented', style: TextStyle(color: Colors.orange[700])),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('Another car is currently being rented', 
+              style: TextStyle(color: Colors.orange[700])),
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Close'),
+            ),
+          ],
+        ),
     ];
+  }
+
+  void _startRentalProcess(BuildContext context, Map<String, dynamic> car) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PhotoCheckWidget(
+          isPreRide: true,
+          onComplete: () {
+            final rentalService = context.read<RentalService>();
+            Navigator.pop(context); // Close photo check
+            rentalService.startRental(car['id']);
+            // Show rental dialog again, now with active rental
+            _showRentalControls(context, car, true);
+          },
+        ),
+      ),
+    );
+  }
+
+  void _endRentalProcess(BuildContext context, String carId) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PhotoCheckWidget(
+          isPreRide: false,
+          onComplete: () {
+            final rentalService = context.read<RentalService>();
+            final seconds = rentalService.elapsedSeconds;
+            final cost = rentalService.endRental();
+            Navigator.of(context).pop(); // Close photo check
+            Navigator.of(context).pop(); // Close rental dialog
+            _showRentalSummary(context, cost, seconds);
+          },
+        ),
+      ),
+    );
   }
 
   String _formatDuration(int seconds) {
@@ -138,6 +182,7 @@ class _RentingCarsPageState extends State<RentingCarsPage> {
   void _showRentalSummary(BuildContext context, double cost, int seconds) {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (context) => AlertDialog(
         title: const Text('Rental Complete'),
         content: Column(
@@ -150,10 +195,7 @@ class _RentingCarsPageState extends State<RentingCarsPage> {
         ),
         actions: [
           TextButton(
-            onPressed: () {
-              Navigator.pop(context); // Close summary dialog
-              Navigator.pop(context); // Close rental controls dialog
-            },
+            onPressed: () => Navigator.of(context).pop(), // Just close the summary dialog
             child: const Text('OK'),
           ),
         ],

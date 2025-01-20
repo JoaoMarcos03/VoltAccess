@@ -4,6 +4,7 @@ import 'package:voltaccess/registration_and_login/login_view.dart';
 import 'marcos/services/location_service.dart';
 import 'marcos/services/car_service.dart';
 import 'marcos/services/rental_service.dart';
+import 'marcos/services/photo_service.dart';
 
 void main() {
   runApp(
@@ -12,6 +13,7 @@ void main() {
         ChangeNotifierProvider(create: (_) => LocationService()),
         ChangeNotifierProvider(create: (_) => CarService()),
         ChangeNotifierProvider(create: (_) => RentalService()),
+        ChangeNotifierProvider(create: (_) => PhotoService()),
       ],
       child: const MyApp(),
     ),
