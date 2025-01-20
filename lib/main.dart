@@ -12,8 +12,11 @@ void main() {
       providers: [
         ChangeNotifierProvider(create: (_) => LocationService()),
         ChangeNotifierProvider(create: (_) => CarService()),
-        ChangeNotifierProvider(create: (_) => RentalService()),
         ChangeNotifierProvider(create: (_) => PhotoService()),
+        ChangeNotifierProvider(create: (context) => RentalService(
+          context.read<CarService>(),
+          context.read<PhotoService>(),
+        )),
       ],
       child: const MyApp(),
     ),

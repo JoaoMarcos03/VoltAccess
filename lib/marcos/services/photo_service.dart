@@ -50,4 +50,18 @@ class PhotoService extends ChangeNotifier {
     );
     notifyListeners();
   }
+
+  Map<String, File> getPreRidePhotos() {
+    return Map.fromEntries(
+      preRidePhotos.entries.where((e) => e.value != null)
+          .map((e) => MapEntry(e.key, e.value!))
+    );
+  }
+
+  Map<String, File> getPostRidePhotos() {
+    return Map.fromEntries(
+      postRidePhotos.entries.where((e) => e.value != null)
+          .map((e) => MapEntry(e.key, e.value!))
+    );
+  }
 }

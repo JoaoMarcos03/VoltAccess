@@ -1,11 +1,20 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'pricing_service.dart';
+import '../models/ride_history.dart';
+import 'car_service.dart';
+import 'photo_service.dart';
 
 /// Manages the car rental state and timing functionality.
 /// Handles starting/stopping rentals and calculates costs in real-time.
 class RentalService extends ChangeNotifier {
   final PricingService _pricingService = PricingService();
+  final List<RideHistory> _rideHistory = [];
+  final CarService _carService;
+  final PhotoService _photoService;
+  
+  // Constructor injection
+  RentalService(this._carService, this._photoService);
   
   // Rental state
   bool _isRenting = false;
@@ -18,6 +27,7 @@ class RentalService extends ChangeNotifier {
   bool get isRenting => _isRenting;
   String? get currentCarId => _currentCarId;
   int get elapsedSeconds => _elapsedSeconds;
+  List<RideHistory> get rideHistory => List.unmodifiable(_rideHistory);
   
   /// Calculates the current cost based on elapsed time and membership type
   double get currentCost => _pricingService.calculateRentalCost(
@@ -45,7 +55,27 @@ class RentalService extends ChangeNotifier {
       _isRenting = false;
       _timer?.cancel();
       final cost = currentCost;
+      
+      // Get car details with null check
+      final car = _carService.getCarById(_currentCarId!);
+      final carName = car?['name'] ?? 'Unknown Car';
+      
+      // Save ride history with photos
+      _rideHistory.add(RideHistory(
+        carId: _currentCarId!,
+        carName: carName,  // Use the retrieved car name
+        startTime: _startTime!,
+        endTime: DateTime.now(),
+        cost: cost,
+        preRidePhotos: _photoService.getPreRidePhotos(),
+        postRidePhotos: _photoService.getPostRidePhotos(),
+      ));
+      
+      // Clear photos for next ride
+      _photoService.clearPhotos();
+      
       _cleanup();
+      notifyListeners();
       return cost;
     }
     return 0;
