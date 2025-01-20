@@ -1,35 +1,46 @@
+import 'dart:math';
+import '../models/membership.dart';
+
 class PricingService {
+  // €0.30 per minute = €0.005 per second (0.30/60)
   static const double PER_MINUTE_RATE = 0.30;
+  static const double PER_SECOND_RATE = PER_MINUTE_RATE / 60; // Equals 0.005 euros per second
   static const double DAILY_CAP = 20.0;
-  static const double BASIC_PLAN_PRICE = 30.0;
-  static const double PREMIUM_PLAN_PRICE = 50.0;
-  static const int BASIC_PLAN_FREE_MINUTES = 120; // 2 hours per week
-  static const int PREMIUM_PLAN_FREE_MINUTES = 300; // 5 hours per week
+  static const double DEPOSIT_AMOUNT = 100.0;
 
-  double calculateRentalCost(int minutes, String membershipType) {
-    double cost = minutes * PER_MINUTE_RATE;
-    
+  double calculateRentalCost(int seconds, MembershipType membershipType, DateTime startTime) {
+    // First, check if seconds are covered by membership free minutes
+    final freeSecondsRemaining = _calculateRemainingFreeSeconds(membershipType, startTime);
+    final paidSeconds = seconds > freeSecondsRemaining ? 
+                       seconds - freeSecondsRemaining : 0;
+
+    // Calculate base cost using seconds (€0.30 per minute = €0.005 per second)
+    double cost = (paidSeconds * PER_SECOND_RATE);
+
     // Apply daily cap if applicable
-    if (cost > DAILY_CAP) {
-      cost = DAILY_CAP;
+    return min(cost, DAILY_CAP);
+  }
+
+  int _calculateRemainingFreeSeconds(MembershipType membershipType, DateTime startTime) {
+    if (membershipType == MembershipType.payAsYouGo) {
+      return 0;
     }
 
-    // Apply membership discounts
-    switch (membershipType) {
-      case 'basic':
-        if (minutes <= BASIC_PLAN_FREE_MINUTES) {
-          cost = 0;
-        }
-        break;
-      case 'premium':
-        if (minutes <= PREMIUM_PLAN_FREE_MINUTES) {
-          cost = 0;
-        }
-        break;
-      default: // pay-as-you-go
-        break;
-    }
+    final membership = Membership.plans[membershipType]!;
+    final weekStart = startTime.subtract(Duration(days: startTime.weekday - 1));
+    // Convert free minutes to seconds
+    return membership.freeMinutesPerWeek * 60;
+  }
 
-    return cost;
+  double calculateHourlyRate(int hours) {
+    return min(hours * PER_MINUTE_RATE * 60, DAILY_CAP);
+  }
+
+  double getDepositAmount(bool isFirstTimeUser) {
+    return isFirstTimeUser ? DEPOSIT_AMOUNT : 0;
+  }
+
+  double getMembershipFee(MembershipType type) {
+    return Membership.plans[type]?.monthlyFee ?? 0;
   }
 }

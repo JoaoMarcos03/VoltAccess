@@ -4,6 +4,7 @@ import 'pricing_service.dart';
 import '../models/ride_history.dart';
 import 'car_service.dart';
 import 'photo_service.dart';
+import '../models/membership.dart';
 
 /// Manages the car rental state and timing functionality.
 /// Handles starting/stopping rentals and calculates costs in real-time.
@@ -12,6 +13,7 @@ class RentalService extends ChangeNotifier {
   final List<RideHistory> _rideHistory = [];
   final CarService _carService;
   final PhotoService _photoService;
+  final MembershipType _membershipType = MembershipType.payAsYouGo; // TODO: Implement membership management
   
   // Constructor injection
   RentalService(this._carService, this._photoService);
@@ -31,9 +33,26 @@ class RentalService extends ChangeNotifier {
   
   /// Calculates the current cost based on elapsed time and membership type
   double get currentCost => _pricingService.calculateRentalCost(
-    (_elapsedSeconds / 60).ceil(),
-    'pay-as-you-go', // TODO: Implement membership types
+    _elapsedSeconds,  // Pass seconds directly instead of converting to minutes
+    _membershipType,
+    _startTime ?? DateTime.now(),
   );
+
+  // Add getters for pricing information
+  double get perMinuteRate => PricingService.PER_MINUTE_RATE;
+  double get dailyCap => PricingService.DAILY_CAP;
+  double get depositAmount => _pricingService.getDepositAmount(true); // TODO: Track first-time users
+  
+  String get membershipInfo {
+    switch (_membershipType) {
+      case MembershipType.basic:
+        return 'Basic Plan: 2 hours free per week';
+      case MembershipType.premium:
+        return 'Premium Plan: 5 hours free per week';
+      default:
+        return 'Pay-as-you-go';
+    }
+  }
 
   /// Starts a new rental for the specified car
   /// Initializes timer and updates rental state

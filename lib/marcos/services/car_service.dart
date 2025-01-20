@@ -13,27 +13,39 @@ class CarService extends ChangeNotifier {
   static final List<Map<String, dynamic>> _carLocations = [
     {
       'id': 'car_1',
-      'name': 'Tesla Model 3',
+      'name': 'Citroën AMI 1',
       'lat': 41.007850,
       'lng': -8.636281,
     },
     {
       'id': 'car_2',
-      'name': 'VW ID.4',
+      'name': 'Citroën AMI 2',
       'lat': 41.008050,
       'lng': -8.636481,
     },
     {
       'id': 'car_3',
-      'name': 'Hyundai Ioniq',
+      'name': 'Citroën AMI 3',
       'lat': 41.005127198462105,
       'lng': -8.633992917452346,
     },
     {
       'id': 'car_4',
-      'name': 'Tesla Cybertruck',
+      'name': 'Citroën AMI 4',
       'lat': 41.007831134544766,
       'lng': -8.636033275819013,
+    },
+	{
+      'id': 'car_5',
+      'name': 'Citroën AMI 5',
+      'lat': 41.119265704031406,
+      'lng': -8.622223922180122,
+    },
+	{
+      'id': 'car_6',
+      'name': 'Citroën AMI 6',
+      'lat': 41.11973531818157,
+      'lng': -8.623497826735035,
     },
   ];
 
