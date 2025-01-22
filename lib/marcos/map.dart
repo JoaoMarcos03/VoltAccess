@@ -4,8 +4,6 @@ import 'package:provider/provider.dart';
 import 'services/location_service.dart';
 import 'services/car_service.dart';
 import 'services/rental_service.dart';
-import 'screens/car_rental_screen.dart';
-import 'widgets/rental_overlay.dart';
 import 'widgets/photo_check_widget.dart';
 
 /// Main screen showing available cars on map and handling rental interactions

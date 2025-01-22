@@ -4,7 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:voltaccess/registration_and_login/add_card.dart';
 
 class LicenseUploadPage extends StatefulWidget {
-  const LicenseUploadPage({Key? key}) : super(key: key);
+  const LicenseUploadPage({super.key});
 
   @override
   _LicenseUploadPageState createState() => _LicenseUploadPageState();
@@ -19,7 +19,7 @@ class _LicenseUploadPageState extends State<LicenseUploadPage> {
 
     if (pickedFile != null) {
       setState(() {
-        _licenseImage = File(pickedFile.path);  // Zapisz ścieżkę obrazu
+        _licenseImage = File(pickedFile.path); // Zapisz ścieżkę obrazu
       });
     }
   }
@@ -30,7 +30,7 @@ class _LicenseUploadPageState extends State<LicenseUploadPage> {
       appBar: AppBar(
         title: const Text('Upload License Image'),
       ),
-      body: SingleChildScrollView( // Dodajemy scrollowanie, aby unikać overflow
+      body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -43,12 +43,11 @@ class _LicenseUploadPageState extends State<LicenseUploadPage> {
               ),
               const SizedBox(height: 20),
               _licenseImage != null
-                  ? Image.file(_licenseImage!)  // Wyświetl obrazek jeśli istnieje
+                  ? Image.file(_licenseImage!) // Wyświetl obrazek jeśli istnieje
                   : const Text('No image selected.'),
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () {
-                  // Po zarejestrowaniu użytkownika przekierowujemy do strony dodawania karty
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => const AddCardPage()),
@@ -56,7 +55,88 @@ class _LicenseUploadPageState extends State<LicenseUploadPage> {
                 },
                 child: const Text('Submit'),
               ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
 
+class AddCardPage extends StatelessWidget {
+  const AddCardPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Add Card'),
+      ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Text(
+                'Add your card details below:',
+                style: TextStyle(fontSize: 18),
+              ),
+              const SizedBox(height: 20),
+              TextField(
+                decoration: InputDecoration(
+                  labelText: 'Card Number',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                keyboardType: TextInputType.number,
+              ),
+              const SizedBox(height: 20),
+              TextField(
+                decoration: InputDecoration(
+                  labelText: 'Expiration Date',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              TextField(
+                decoration: InputDecoration(
+                  labelText: 'CVV',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                keyboardType: TextInputType.number,
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Text('Submission Complete'),
+                        content: const Text(
+                          'You have to wait for your submission to be accepted.',
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                              Navigator.of(context).pop(); // Powrót do poprzedniego ekranu
+                            },
+                            child: const Text('OK'),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
+                child: const Text('Submit Card'),
+              ),
             ],
           ),
         ),
