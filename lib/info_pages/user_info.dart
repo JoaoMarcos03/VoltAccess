@@ -8,172 +8,162 @@ class UserProfilePage extends StatefulWidget {
 }
 
 class _UserProfilePageState extends State<UserProfilePage> {
-  // Zmienna do przechowywania danych użytkownika
+  // User Information
   String firstName = 'John';
   String lastName = 'Doe';
   String dateOfBirth = '01/01/1990';
   String email = 'johndoe@example.com';
   String phoneNumber = '+1 123 456 7890';
   String creditCard = '1234 5678 9012 3456';
+  String membership = 'Pay-as-you-go';
 
-  // Kontrolery do formularza
-  final _formKey = GlobalKey<FormState>();
-  final TextEditingController _firstNameController = TextEditingController();
-  final TextEditingController _lastNameController = TextEditingController();
-  final TextEditingController _dateOfBirthController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _phoneNumberController = TextEditingController();
-  final TextEditingController _creditCardController = TextEditingController();
-
-  @override
-  void initState() {
-    super.initState();
-
-    // Ustawiamy początkowe wartości w kontrolerach
-    _firstNameController.text = firstName;
-    _lastNameController.text = lastName;
-    _dateOfBirthController.text = dateOfBirth;
-    _emailController.text = email;
-    _phoneNumberController.text = phoneNumber;
-    _creditCardController.text = creditCard;
-  }
+  final List<String> membershipPlans = [
+    'Pay-as-you-go',
+    'Basic Plan (€30/month-2 hrs free/week)',
+    'Premium Plan (€50/month-5 hrs free/week)'
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('User Profile'),
+        title: const Text('User Profile', style: TextStyle(color: Colors.white)),
+        backgroundColor: Colors.black,
+        iconTheme: const IconThemeData(color: Colors.white), // Ensures back arrow is white
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: SingleChildScrollView(  // Dodanie przewijania
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'User Information',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Image.asset(
+                'lib/logo.webp',
+                height: 80,
               ),
-              const SizedBox(height: 16),
-              _buildInfoRow('First Name', _firstNameController),
-              _buildInfoRow('Last Name', _lastNameController),
-              _buildInfoRow('Date of Birth', _dateOfBirthController),
-              _buildInfoRow('Email', _emailController),
-              _buildInfoRow('Phone Number', _phoneNumberController),
-              _buildInfoRow('Credit Card', _creditCardController),
-              const SizedBox(height: 20),
-              Center(
-                child: ElevatedButton(
-                  onPressed: () {
-                    // Wyświetl formularz do edytowania danych
-                    _showEditDialog(context);
-                  },
-                  child: const Text('Edit Information'),
-                ),
-              ),
-            ],
-          ),
+            ),
+            const SizedBox(height: 30),
+            _buildInfoRow('First Name', firstName, () => _editField(context, 'First Name', firstName, (val) => setState(() => firstName = val))),
+            _buildInfoRow('Last Name', lastName, () => _editField(context, 'Last Name', lastName, (val) => setState(() => lastName = val))),
+            _buildInfoRow('Date of Birth', dateOfBirth, () => _editField(context, 'Date of Birth', dateOfBirth, (val) => setState(() => dateOfBirth = val))),
+            _buildInfoRow('Email', email, () => _editField(context, 'Email', email, (val) => setState(() => email = val))),
+            _buildInfoRow('Phone Number', phoneNumber, () => _editField(context, 'Phone Number', phoneNumber, (val) => setState(() => phoneNumber = val))),
+            _buildInfoRow('Credit Card', creditCard, () => _editField(context, 'Credit Card', creditCard, (val) => setState(() => creditCard = val))),
+            _buildMembershipSelection(),
+          ],
         ),
       ),
     );
   }
 
-  // Funkcja do wyświetlania formularza edycji danych
-  void _showEditDialog(BuildContext context) {
+  Widget _buildInfoRow(String label, String value, VoidCallback onEdit) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: Text(label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+          ),
+          Expanded(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Expanded(
+                  child: Text(value, style: const TextStyle(fontSize: 16, color: Colors.black), overflow: TextOverflow.ellipsis, maxLines: 1, softWrap: false),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.edit, color: Colors.black),
+                  onPressed: onEdit,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMembershipSelection() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Membership Plan', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+          SizedBox(
+            width: double.infinity,
+            child: DropdownButtonFormField<String>(
+              value: membership,
+              items: membershipPlans.map((plan) => DropdownMenuItem(value: plan, child: Text(plan, style: const TextStyle(color: Colors.black), overflow: TextOverflow.ellipsis, maxLines: 1, softWrap: false)) ).toList(),
+              onChanged: (value) {
+                setState(() {
+                  membership = value!;
+                });
+              },
+              decoration: InputDecoration(
+                border: OutlineInputBorder(
+                  borderSide: const BorderSide(color: Colors.black, width: 2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                filled: true,
+                fillColor: Colors.white,
+              ),
+              dropdownColor: Colors.white,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _editField(BuildContext context, String label, String currentValue, Function(String) onSave) {
+    TextEditingController controller = TextEditingController(text: currentValue);
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Edit User Information'),
-          content: Form(
-            key: _formKey,
-            child: SingleChildScrollView(  // Dodanie przewijania w oknie dialogowym
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _buildTextFormField('First Name', _firstNameController),
-                  _buildTextFormField('Last Name', _lastNameController),
-                  _buildTextFormField('Date of Birth', _dateOfBirthController),
-                  _buildTextFormField('Email', _emailController),
-                  _buildTextFormField('Phone Number', _phoneNumberController),
-                  _buildTextFormField('Credit Card', _creditCardController),
-                ],
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+            side: const BorderSide(color: Colors.black, width: 2),
+          ),
+          title: Text(label, style: const TextStyle(color: Colors.black)),
+          content: TextField(
+            controller: controller,
+            cursorColor: Colors.black,
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: Colors.white,
+              contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 15),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: Colors.black, width: 2),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: Colors.black, width: 2),
               ),
             ),
+            style: const TextStyle(color: Colors.black),
           ),
           actions: [
             TextButton(
-              onPressed: () {
-                // Zamknij dialog bez zapisywania
-                Navigator.pop(context);
-              },
-              child: const Text('Cancel'),
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel', style: TextStyle(color: Colors.black)),
             ),
             ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
               onPressed: () {
-                // Zapisz zmienione dane
-                if (_formKey.currentState?.validate() ?? false) {
-                  setState(() {
-                    firstName = _firstNameController.text;
-                    lastName = _lastNameController.text;
-                    dateOfBirth = _dateOfBirthController.text;
-                    email = _emailController.text;
-                    phoneNumber = _phoneNumberController.text;
-                    creditCard = _creditCardController.text;
-                  });
-
-                  // Zamknij dialog po zapisaniu zmian
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Information updated successfully!')),
-                  );
-                }
+                onSave(controller.text);
+                Navigator.pop(context);
               },
-              child: const Text('Save'),
+              child: const Text('Save', style: TextStyle(color: Colors.white)),
             ),
           ],
         );
       },
-    );
-  }
-
-  // Funkcja do budowy formularza tekstowego
-  Widget _buildTextFormField(String label, TextEditingController controller) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: TextFormField(
-        controller: controller,
-        decoration: InputDecoration(
-          labelText: label,
-          border: const OutlineInputBorder(),
-        ),
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return 'Please enter $label';
-          }
-          return null;
-        },
-      ),
-    );
-  }
-
-  // Funkcja do wyświetlania danych użytkownika
-  Widget _buildInfoRow(String label, TextEditingController controller) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-          ),
-          Text(
-            controller.text,
-            style: const TextStyle(fontSize: 16, color: Colors.grey),
-          ),
-        ],
-      ),
     );
   }
 }

@@ -1,8 +1,4 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../marcos/services/rental_service.dart';
-import '../marcos/models/ride_history.dart';
 
 class RideHistoryPage extends StatelessWidget {
   const RideHistoryPage({super.key});
@@ -14,36 +10,38 @@ class RideHistoryPage extends StatelessWidget {
     return '$hours:$minutes:$seconds';
   }
 
-  void _showRideDetails(BuildContext context, RideHistory ride) {
+  double _calculateCost(Duration duration) {
+    const double ratePerMinute = 0.30;
+    const double dailyCap = 20.00;
+    double totalCost = duration.inMinutes * ratePerMinute;
+    return totalCost > dailyCap ? dailyCap : totalCost;
+  }
+
+  void _showRideDetails(BuildContext context, Ride ride) {
     showDialog(
       context: context,
       builder: (context) => Dialog(
-        child: SingleChildScrollView(
+        backgroundColor: Colors.grey[900],
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               AppBar(
-                title: Text(ride.carName),
+                title: Text(ride.carName, style: const TextStyle(color: Colors.white)),
+                backgroundColor: Colors.black,
                 leading: IconButton(
-                  icon: const Icon(Icons.close),
+                  icon: const Icon(Icons.close, color: Colors.white),
                   onPressed: () => Navigator.pop(context),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Date: ${ride.startTime.toLocal().toString().split('.')[0]}'),
-                    Text('Duration: ${_formatDuration(ride.endTime.difference(ride.startTime))}'),
-                    Text('Cost: €${ride.cost.toStringAsFixed(2)}'),
-                    const Divider(),
-                    _buildPhotoSection('Pre-Ride Photos', ride.preRidePhotos),
-                    const Divider(),
-                    _buildPhotoSection('Post-Ride Photos', ride.postRidePhotos),
-                  ],
-                ),
-              ),
+              const SizedBox(height: 16),
+              Text('Date: ${ride.startTime.toLocal().toString().split('.')[0]}',
+                  style: const TextStyle(color: Colors.white)),
+              Text('Duration: ${_formatDuration(ride.endTime.difference(ride.startTime))}',
+                  style: const TextStyle(color: Colors.white)),
+              Text('Cost: €${_calculateCost(ride.endTime.difference(ride.startTime)).toStringAsFixed(2)}',
+                  style: const TextStyle(color: Colors.white)),
             ],
           ),
         ),
@@ -51,98 +49,67 @@ class RideHistoryPage extends StatelessWidget {
     );
   }
 
-  Widget _buildPhotoSection(String title, Map<String, File> photos) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-        const SizedBox(height: 8),
-        if (photos.isEmpty)
-          const Text('No photos available')
-        else
-          GridView.count(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            crossAxisCount: 2,
-            mainAxisSpacing: 8,
-            crossAxisSpacing: 8,
-            children: photos.entries.map((entry) => InkWell(
-              onTap: () => _showFullScreenPhoto(entry.value),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image.file(
-                  entry.value,
-                  fit: BoxFit.cover,
-                ),
-              ),
-            )).toList(),
-          ),
-      ],
-    );
-  }
-
-  void _showFullScreenPhoto(File photo) {
-    showDialog(
-      context: globalKey.currentContext!,
-      builder: (context) => Dialog(
-        child: Stack(
-          alignment: Alignment.topRight,
-          children: [
-            Image.file(photo),
-            IconButton(
-              icon: const Icon(Icons.close, color: Colors.white),
-              onPressed: () => Navigator.pop(context),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  static final GlobalKey<NavigatorState> globalKey = GlobalKey<NavigatorState>();
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Ride History'),
+    final rides = [
+      Ride(
+        carName: 'Citroën Ami',
+        startTime: DateTime(2024, 4, 10, 14, 30),
+        endTime: DateTime(2024, 4, 10, 15, 8),
       ),
-      body: Consumer<RentalService>(
-        builder: (context, rentalService, child) {
-          final rides = rentalService.rideHistory;
-          
-          if (rides.isEmpty) {
-            return const Center(
-              child: Text('No rides yet', 
-                style: TextStyle(fontSize: 18),
-              ),
-            );
-          }
+      Ride(
+        carName: 'Citroën Ami',
+        startTime: DateTime(2024, 5, 8, 9, 15),
+        endTime: DateTime(2024, 5, 8, 9,37),
+      ),
+    ];
 
-          return ListView.builder(
-            itemCount: rides.length,
-            itemBuilder: (context, index) {
-              final ride = rides[index];
-              return Card(
-                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: ListTile(
-                  title: Text(ride.carName),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Date: ${ride.startTime.toLocal().toString().split('.')[0]}'),
-                      Text('Duration: ${_formatDuration(ride.endTime.difference(ride.startTime))}'),
-                      Text('Cost: €${ride.cost.toStringAsFixed(2)}'),
-                    ],
-                  ),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () => _showRideDetails(context, ride),
-                ),
-              );
-            },
-          );
-        },
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: const Text('Ride History', style: TextStyle(color: Colors.white)),
+        backgroundColor: Colors.black,
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
+      body: rides.isEmpty
+          ? const Center(
+              child: Text('No rides yet', style: TextStyle(fontSize: 18)),
+            )
+          : ListView.builder(
+              itemCount: rides.length,
+              itemBuilder: (context, index) {
+                final ride = rides[index];
+                return Card(
+                  color: Colors.grey[300],
+                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: ListTile(
+                    title: Text(ride.carName),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Date: ${ride.startTime.toLocal().toString().split('.')[0]}'),
+                        Text('Duration: ${_formatDuration(ride.endTime.difference(ride.startTime))}'),
+                        Text('Cost: €${_calculateCost(ride.endTime.difference(ride.startTime)).toStringAsFixed(2)}'),
+                      ],
+                    ),
+                    trailing: const Icon(Icons.chevron_right, color: Colors.black),
+                    onTap: () => _showRideDetails(context, ride),
+                  ),
+                );
+              },
+            ),
     );
   }
+}
+
+class Ride {
+  final String carName;
+  final DateTime startTime;
+  final DateTime endTime;
+
+  Ride({
+    required this.carName,
+    required this.startTime,
+    required this.endTime,
+  });
 }
