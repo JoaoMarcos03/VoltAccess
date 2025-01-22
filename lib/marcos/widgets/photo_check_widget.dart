@@ -37,15 +37,31 @@ class PhotoCheckWidget extends StatelessWidget {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(16),
-            child: ElevatedButton(
-              onPressed: (isPreRide ? photoService.arePreRidePhotosComplete() 
+  padding: const EdgeInsets.all(16),
+  child: ElevatedButton(
+    onPressed: (isPreRide ? photoService.arePreRidePhotosComplete()
+                          : photoService.arePostRidePhotosComplete())
+        ? () => onComplete()
+        : null,
+    style: ElevatedButton.styleFrom(
+      backgroundColor: (isPreRide ? photoService.arePreRidePhotosComplete()
                                   : photoService.arePostRidePhotosComplete())
-                  ? () => onComplete()
-                  : null,
-              child: Text(isPreRide ? 'Start Ride' : 'Complete Ride'),
-            ),
-          ),
+          ? Colors.black // Czarny, gdy aktywny
+          : Colors.grey[700], // Szary, gdy nieaktywny
+      foregroundColor: Colors.white, // Biały tekst
+      padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 32), // Większy padding dla lepszego wyglądu
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12), // Bardziej zaokrąglone rogi jak w "Start Rental"
+      ),
+      elevation: 4, // Lekki cień, żeby wyglądało lepiej
+    ),
+    child: Text(
+      isPreRide ? 'Start Ride' : 'Complete Ride',
+      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+    ),
+  ),
+),
+
         ],
       ),
     );

@@ -28,10 +28,15 @@ class _MapScreenState extends State<MapScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Available Cars'),
+        title: const Text(
+          'Available Cars',
+          style: TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Colors.black,
+        iconTheme: const IconThemeData(color: Colors.white),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh, color: Colors.white),
             onPressed: () {
               context.read<CarService>().initializeMockCars();
             },
@@ -41,7 +46,11 @@ class _MapScreenState extends State<MapScreen> {
       body: Consumer2<LocationService, CarService>(
         builder: (context, locationService, carService, child) {
           if (locationService.currentLocation == null) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(
+              child: CircularProgressIndicator(
+                color: Colors.grey,
+              ),
+            );
           }
 
           final userLocation = LatLng(
@@ -70,8 +79,13 @@ class _MapScreenState extends State<MapScreen> {
                     );
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Get closer to the car to start rental'),
+                      SnackBar(
+                        content: const Text(
+                          'Get closer to the car to start rental',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        backgroundColor: Colors.black,
+                        behavior: SnackBarBehavior.floating,
                       ),
                     );
                   }

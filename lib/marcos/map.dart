@@ -88,35 +88,55 @@ class _RentingCarsPageState extends State<RentingCarsPage> {
       if (!isNearby)
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text('Get closer to rent this car', 
-              style: TextStyle(color: Colors.red)),
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Close'),
-            ),
-          ],
-        )
+              children: [
+              const Text(
+                'Get closer to rent this car',
+                style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                style: TextButton.styleFrom(
+                  foregroundColor: const Color.fromARGB(255, 78, 78, 78), // Szary tekst
+                  padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
+                ),
+                child: const Text('Close'),
+              ),
+            ],
+
+                    )
       else if (!rentalService.isRenting)
         Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            ElevatedButton(
-              onPressed: () => _startRentalProcess(context, car),
-              child: const Text('Start Rental'),
-            ),
-            const SizedBox(width: 8),
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Close'),
-            ),
-          ],
+  ElevatedButton(
+    onPressed: () => _startRentalProcess(context, car),
+    style: ElevatedButton.styleFrom(
+      backgroundColor: Colors.black, // Czarny przycisk
+      foregroundColor: Colors.white, // Biały tekst
+      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+      ),
+    ),
+    child: const Text('Start Rental'),
+  ),
+  const SizedBox(width: 8),
+  TextButton(
+    onPressed: () => Navigator.pop(context),
+    style: TextButton.styleFrom(
+      foregroundColor: const Color.fromARGB(255, 78, 78, 78), // Szary tekst
+      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
+    ),
+    child: const Text('Close'),
+  ),
+],
+
         )
       else if (isCurrentCar)
         ElevatedButton(
           onPressed: () => _endRentalProcess(context, car['id']),
           style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-          child: const Text('End Rental'),
+         child: const Text('End Rental', style: TextStyle(color: Colors.white)),
         )
       else
         Row(

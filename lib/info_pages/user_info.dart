@@ -8,6 +8,39 @@ class UserProfilePage extends StatefulWidget {
   _UserProfilePageState createState() => _UserProfilePageState();
 }
 
+Future<void> _editField(BuildContext context, String label, String initialValue, Function(String) onSave) async {
+  final TextEditingController controller = TextEditingController(text: initialValue);
+  await showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: Text('Edit $label'),
+        content: TextField(
+          controller: controller,
+          decoration: InputDecoration(
+            labelText: label,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              onSave(controller.text);
+              Navigator.of(context).pop();
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      );
+    },
+  );
+}
+
 class _UserProfilePageState extends State<UserProfilePage> {
   // User Information
   String firstName = 'John';
@@ -61,7 +94,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
       appBar: AppBar(
         title: const Text('User Profile', style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.black,
-        iconTheme: const IconThemeData(color: Colors.white), // Ensures back arrow is white
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
@@ -126,7 +159,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
           SizedBox(
             width: double.infinity,
             child: DropdownButtonFormField<String>(
-              value: membership,
+              value: membershipPlans.contains(membership) ? membership : null,
               items: membershipPlans.map((plan) => DropdownMenuItem(value: plan, child: Text(plan, style: const TextStyle(color: Colors.black), overflow: TextOverflow.ellipsis, maxLines: 1, softWrap: false)) ).toList(),
               onChanged: (value) {
                 setState(() {
@@ -147,47 +180,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
           ),
         ],
       ),
-    );
-  }
-
-  void _editField(BuildContext context, String label, String currentValue, Function(String) onSave) {
-    TextEditingController controller = TextEditingController(text: currentValue);
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-            side: const BorderSide(color: Colors.black, width: 2),
-          ),
-          title: Text(label, style: const TextStyle(color: Colors.black)),
-          content: TextField(
-            controller: controller,
-            cursorColor: Colors.black,
-            decoration: InputDecoration(
-              filled: true,
-              fillColor: Colors.white,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: Colors.black, width: 2),
-              ),
-            ),
-            style: const TextStyle(color: Colors.black),
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel', style: TextStyle(color: Colors.black))),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
-              onPressed: () {
-                onSave(controller.text);
-                Navigator.pop(context);
-              },
-              child: const Text('Save', style: TextStyle(color: Colors.white)),
-            ),
-          ],
-        );
-      },
     );
   }
 }

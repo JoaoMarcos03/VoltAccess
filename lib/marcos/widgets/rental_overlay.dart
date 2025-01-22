@@ -22,9 +22,10 @@ class RentalOverlay extends StatelessWidget {
     final carDetails = carService.getCarById(carId);
 
     return Container(
-      color: Colors.black54,
+      color: Colors.black87,
       child: Center(
         child: Card(
+          color: Colors.grey[900],
           margin: const EdgeInsets.symmetric(horizontal: 20),
           child: Padding(
             padding: const EdgeInsets.all(20),
@@ -33,22 +34,22 @@ class RentalOverlay extends StatelessWidget {
               children: [
                 Text(
                   carDetails?['name'] ?? '',
-                  style: Theme.of(context).textTheme.headlineSmall,
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(color: Colors.white),
                 ),
                 const SizedBox(height: 20),
                 if (rentalService.isRenting) ...[
                   Text(
                     formatDuration(rentalService.elapsedSeconds),
-                    style: Theme.of(context).textTheme.displayMedium,
+                    style: Theme.of(context).textTheme.displayMedium?.copyWith(color: Colors.white),
                   ),
                   const SizedBox(height: 10),
                   Text(
                     '€${rentalService.currentCost.toStringAsFixed(2)}',
-                    style: Theme.of(context).textTheme.headlineMedium,
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: Colors.white),
                   ),
                 ] else ...[
-                  const Text('€0.30 per minute'),
-                  const Text('Daily cap: €20.00'),
+                  const Text('€0.30 per minute', style: TextStyle(color: Colors.white70)),
+                  const Text('Daily cap: €20.00', style: TextStyle(color: Colors.white70)),
                 ],
                 const SizedBox(height: 20),
                 Row(
@@ -57,7 +58,10 @@ class RentalOverlay extends StatelessWidget {
                     if (!rentalService.isRenting)
                       ElevatedButton(
                         onPressed: () => rentalService.startRental(carId),
-                        child: const Text('Start Rental'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.grey[700],
+                        ),
+                        child: const Text('Start Rental', style: TextStyle(color: Colors.white)),
                       )
                     else
                       ElevatedButton(
@@ -66,12 +70,13 @@ class RentalOverlay extends StatelessWidget {
                           showDialog(
                             context: context,
                             builder: (context) => AlertDialog(
-                              title: const Text('Rental Complete'),
+                              backgroundColor: Colors.grey[900],
+                              title: const Text('Rental Complete', style: TextStyle(color: Colors.white)),
                               content: Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Text('Duration: ${formatDuration(rentalService.elapsedSeconds)}'),
-                                  Text('Total cost: €${cost.toStringAsFixed(2)}'),
+                                  Text('Duration: ${formatDuration(rentalService.elapsedSeconds)}', style: const TextStyle(color: Colors.white70)),
+                                  Text('Total cost: €${cost.toStringAsFixed(2)}', style: const TextStyle(color: Colors.white70)),
                                 ],
                               ),
                               actions: [
@@ -80,7 +85,7 @@ class RentalOverlay extends StatelessWidget {
                                     Navigator.pop(context); // Close dialog
                                     Navigator.pop(context); // Close overlay
                                   },
-                                  child: const Text('OK'),
+                                  child: const Text('OK', style: TextStyle(color: Colors.white)),
                                 ),
                               ],
                             ),
@@ -89,13 +94,13 @@ class RentalOverlay extends StatelessWidget {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.red,
                         ),
-                        child: const Text('End Rental'),
+                        child: const Text('End Rental', style: TextStyle(color: Colors.white)),
                       ),
                     const SizedBox(width: 10),
                     if (!rentalService.isRenting)
                       TextButton(
                         onPressed: () => Navigator.pop(context),
-                        child: const Text('Cancel'),
+                        child: const Text('Cancel', style: TextStyle(color: Colors.white70)),
                       ),
                   ],
                 ),
@@ -107,4 +112,3 @@ class RentalOverlay extends StatelessWidget {
     );
   }
 }
-
