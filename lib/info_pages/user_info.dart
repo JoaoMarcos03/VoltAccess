@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class UserProfilePage extends StatefulWidget {
   const UserProfilePage({super.key});
@@ -12,7 +13,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
   String firstName = 'John';
   String lastName = 'Doe';
   String dateOfBirth = '01/01/1990';
-  String email = 'johndoe@example.com';
+  String email = 'test@example.com';
   String phoneNumber = '+1 123 456 7890';
   String creditCard = '1234 5678 9012 3456';
   String membership = 'Pay-as-you-go';
@@ -22,6 +23,36 @@ class _UserProfilePageState extends State<UserProfilePage> {
     'Basic Plan (€30/month-2 hrs free/week)',
     'Premium Plan (€50/month-5 hrs free/week)'
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      firstName = prefs.getString('firstName') ?? firstName;
+      lastName = prefs.getString('lastName') ?? lastName;
+      dateOfBirth = prefs.getString('dateOfBirth') ?? dateOfBirth;
+      email = prefs.getString('email') ?? email;
+      phoneNumber = prefs.getString('phoneNumber') ?? phoneNumber;
+      creditCard = prefs.getString('creditCard') ?? creditCard;
+      membership = prefs.getString('membership') ?? membership;
+    });
+  }
+
+  Future<void> _saveUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('firstName', firstName);
+    await prefs.setString('lastName', lastName);
+    await prefs.setString('dateOfBirth', dateOfBirth);
+    await prefs.setString('email', email);
+    await prefs.setString('phoneNumber', phoneNumber);
+    await prefs.setString('creditCard', creditCard);
+    await prefs.setString('membership', membership);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,12 +75,12 @@ class _UserProfilePageState extends State<UserProfilePage> {
               ),
             ),
             const SizedBox(height: 30),
-            _buildInfoRow('First Name', firstName, () => _editField(context, 'First Name', firstName, (val) => setState(() => firstName = val))),
-            _buildInfoRow('Last Name', lastName, () => _editField(context, 'Last Name', lastName, (val) => setState(() => lastName = val))),
-            _buildInfoRow('Date of Birth', dateOfBirth, () => _editField(context, 'Date of Birth', dateOfBirth, (val) => setState(() => dateOfBirth = val))),
-            _buildInfoRow('Email', email, () => _editField(context, 'Email', email, (val) => setState(() => email = val))),
-            _buildInfoRow('Phone Number', phoneNumber, () => _editField(context, 'Phone Number', phoneNumber, (val) => setState(() => phoneNumber = val))),
-            _buildInfoRow('Credit Card', creditCard, () => _editField(context, 'Credit Card', creditCard, (val) => setState(() => creditCard = val))),
+            _buildInfoRow('First Name', firstName, (val) => setState(() { firstName = val; _saveUserData(); })),
+            _buildInfoRow('Last Name', lastName, (val) => setState(() { lastName = val; _saveUserData(); })),
+            _buildInfoRow('Date of Birth', dateOfBirth, (val) => setState(() { dateOfBirth = val; _saveUserData(); })),
+            _buildInfoRow('Email', email, (val) => setState(() { email = val; _saveUserData(); })),
+            _buildInfoRow('Phone Number', phoneNumber, (val) => setState(() { phoneNumber = val; _saveUserData(); })),
+            _buildInfoRow('Credit Card', creditCard, (val) => setState(() { creditCard = val; _saveUserData(); })),
             _buildMembershipSelection(),
           ],
         ),
@@ -57,7 +88,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
     );
   }
 
-  Widget _buildInfoRow(String label, String value, VoidCallback onEdit) {
+  Widget _buildInfoRow(String label, String value, Function(String) onSave) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6.0),
       child: Row(
@@ -75,7 +106,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 ),
                 IconButton(
                   icon: const Icon(Icons.edit, color: Colors.black),
-                  onPressed: onEdit,
+                  onPressed: () => _editField(context, label, value, onSave),
                 ),
               ],
             ),
@@ -100,6 +131,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
               onChanged: (value) {
                 setState(() {
                   membership = value!;
+                  _saveUserData();
                 });
               },
               decoration: InputDecoration(
@@ -136,12 +168,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
             decoration: InputDecoration(
               filled: true,
               fillColor: Colors.white,
-              contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 15),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: Colors.black, width: 2),
-              ),
-              focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
                 borderSide: const BorderSide(color: Colors.black, width: 2),
               ),
@@ -149,10 +176,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
             style: const TextStyle(color: Colors.black),
           ),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel', style: TextStyle(color: Colors.black)),
-            ),
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel', style: TextStyle(color: Colors.black))),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
               onPressed: () {
