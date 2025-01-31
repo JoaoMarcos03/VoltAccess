@@ -1,5 +1,3 @@
-Here’s an updated and professional README for your project **VoltAccess**:
-
 ---
 
 # VoltAccess 🚗⚡
