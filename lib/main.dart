@@ -1,8 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:voltaccess/registration_and_login/login_view.dart';
+import 'marcos/services/location_service.dart';
+import 'marcos/services/car_service.dart';
+import 'marcos/services/rental_service.dart';
+import 'marcos/services/photo_service.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => LocationService()),
+        ChangeNotifierProvider(create: (_) => CarService()),
+        ChangeNotifierProvider(create: (_) => PhotoService()),
+        ChangeNotifierProvider(create: (context) => RentalService(
+          context.read<CarService>(),
+          context.read<PhotoService>(),
+        )),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -15,7 +33,7 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       theme: ThemeData(
 
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color.fromARGB(255, 0, 0, 0)),
         useMaterial3: true,
       ),
       home: const LoginView(title: 'Flutter Demo Home Page'),

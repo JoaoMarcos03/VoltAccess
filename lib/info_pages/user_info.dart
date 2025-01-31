@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class UserProfilePage extends StatefulWidget {
   const UserProfilePage({super.key});
@@ -7,170 +8,175 @@ class UserProfilePage extends StatefulWidget {
   _UserProfilePageState createState() => _UserProfilePageState();
 }
 
+Future<void> _editField(BuildContext context, String label, String initialValue, Function(String) onSave) async {
+  final TextEditingController controller = TextEditingController(text: initialValue);
+  await showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: Text('Edit $label'),
+        content: TextField(
+          controller: controller,
+          decoration: InputDecoration(
+            labelText: label,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              onSave(controller.text);
+              Navigator.of(context).pop();
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      );
+    },
+  );
+}
+
 class _UserProfilePageState extends State<UserProfilePage> {
-  // Zmienna do przechowywania danych użytkownika
+  // User Information
   String firstName = 'John';
   String lastName = 'Doe';
   String dateOfBirth = '01/01/1990';
-  String email = 'johndoe@example.com';
+  String email = 'test@example.com';
   String phoneNumber = '+1 123 456 7890';
   String creditCard = '1234 5678 9012 3456';
+  String membership = 'Pay-as-you-go';
 
-  // Kontrolery do formularza
-  final _formKey = GlobalKey<FormState>();
-  final TextEditingController _firstNameController = TextEditingController();
-  final TextEditingController _lastNameController = TextEditingController();
-  final TextEditingController _dateOfBirthController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _phoneNumberController = TextEditingController();
-  final TextEditingController _creditCardController = TextEditingController();
+  final List<String> membershipPlans = [
+    'Pay-as-you-go',
+    'Basic Plan (€30/month-2 hrs free/week)',
+    'Premium Plan (€50/month-5 hrs free/week)'
+  ];
 
   @override
   void initState() {
     super.initState();
+    _loadUserData();
+  }
 
-    // Ustawiamy początkowe wartości w kontrolerach
-    _firstNameController.text = firstName;
-    _lastNameController.text = lastName;
-    _dateOfBirthController.text = dateOfBirth;
-    _emailController.text = email;
-    _phoneNumberController.text = phoneNumber;
-    _creditCardController.text = creditCard;
+  Future<void> _loadUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      firstName = prefs.getString('firstName') ?? firstName;
+      lastName = prefs.getString('lastName') ?? lastName;
+      dateOfBirth = prefs.getString('dateOfBirth') ?? dateOfBirth;
+      email = prefs.getString('email') ?? email;
+      phoneNumber = prefs.getString('phoneNumber') ?? phoneNumber;
+      creditCard = prefs.getString('creditCard') ?? creditCard;
+      membership = prefs.getString('membership') ?? membership;
+    });
+  }
+
+  Future<void> _saveUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('firstName', firstName);
+    await prefs.setString('lastName', lastName);
+    await prefs.setString('dateOfBirth', dateOfBirth);
+    await prefs.setString('email', email);
+    await prefs.setString('phoneNumber', phoneNumber);
+    await prefs.setString('creditCard', creditCard);
+    await prefs.setString('membership', membership);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('User Profile'),
+        title: const Text('User Profile', style: TextStyle(color: Colors.white)),
+        backgroundColor: Colors.black,
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: SingleChildScrollView(  // Dodanie przewijania
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'User Information',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 16),
-              _buildInfoRow('First Name', _firstNameController),
-              _buildInfoRow('Last Name', _lastNameController),
-              _buildInfoRow('Date of Birth', _dateOfBirthController),
-              _buildInfoRow('Email', _emailController),
-              _buildInfoRow('Phone Number', _phoneNumberController),
-              _buildInfoRow('Credit Card', _creditCardController),
-              const SizedBox(height: 20),
-              Center(
-                child: ElevatedButton(
-                  onPressed: () {
-                    // Wyświetl formularz do edytowania danych
-                    _showEditDialog(context);
-                  },
-                  child: const Text('Edit Information'),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  // Funkcja do wyświetlania formularza edycji danych
-  void _showEditDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Edit User Information'),
-          content: Form(
-            key: _formKey,
-            child: SingleChildScrollView(  // Dodanie przewijania w oknie dialogowym
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _buildTextFormField('First Name', _firstNameController),
-                  _buildTextFormField('Last Name', _lastNameController),
-                  _buildTextFormField('Date of Birth', _dateOfBirthController),
-                  _buildTextFormField('Email', _emailController),
-                  _buildTextFormField('Phone Number', _phoneNumberController),
-                  _buildTextFormField('Credit Card', _creditCardController),
-                ],
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Image.asset(
+                'lib/logo.webp',
+                height: 80,
               ),
             ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                // Zamknij dialog bez zapisywania
-                Navigator.pop(context);
-              },
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                // Zapisz zmienione dane
-                if (_formKey.currentState?.validate() ?? false) {
-                  setState(() {
-                    firstName = _firstNameController.text;
-                    lastName = _lastNameController.text;
-                    dateOfBirth = _dateOfBirthController.text;
-                    email = _emailController.text;
-                    phoneNumber = _phoneNumberController.text;
-                    creditCard = _creditCardController.text;
-                  });
-
-                  // Zamknij dialog po zapisaniu zmian
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Information updated successfully!')),
-                  );
-                }
-              },
-              child: const Text('Save'),
-            ),
+            const SizedBox(height: 30),
+            _buildInfoRow('First Name', firstName, (val) => setState(() { firstName = val; _saveUserData(); })),
+            _buildInfoRow('Last Name', lastName, (val) => setState(() { lastName = val; _saveUserData(); })),
+            _buildInfoRow('Date of Birth', dateOfBirth, (val) => setState(() { dateOfBirth = val; _saveUserData(); })),
+            _buildInfoRow('Email', email, (val) => setState(() { email = val; _saveUserData(); })),
+            _buildInfoRow('Phone Number', phoneNumber, (val) => setState(() { phoneNumber = val; _saveUserData(); })),
+            _buildInfoRow('Credit Card', creditCard, (val) => setState(() { creditCard = val; _saveUserData(); })),
+            _buildMembershipSelection(),
           ],
-        );
-      },
-    );
-  }
-
-  // Funkcja do budowy formularza tekstowego
-  Widget _buildTextFormField(String label, TextEditingController controller) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: TextFormField(
-        controller: controller,
-        decoration: InputDecoration(
-          labelText: label,
-          border: const OutlineInputBorder(),
         ),
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return 'Please enter $label';
-          }
-          return null;
-        },
       ),
     );
   }
 
-  // Funkcja do wyświetlania danych użytkownika
-  Widget _buildInfoRow(String label, TextEditingController controller) {
+  Widget _buildInfoRow(String label, String value, Function(String) onSave) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: 6.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          Expanded(
+            child: Text(label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
           ),
-          Text(
-            controller.text,
-            style: const TextStyle(fontSize: 16, color: Colors.grey),
+          Expanded(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Expanded(
+                  child: Text(value, style: const TextStyle(fontSize: 16, color: Colors.black), overflow: TextOverflow.ellipsis, maxLines: 1, softWrap: false),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.edit, color: Colors.black),
+                  onPressed: () => _editField(context, label, value, onSave),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMembershipSelection() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Membership Plan', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+          SizedBox(
+            width: double.infinity,
+            child: DropdownButtonFormField<String>(
+              value: membershipPlans.contains(membership) ? membership : null,
+              items: membershipPlans.map((plan) => DropdownMenuItem(value: plan, child: Text(plan, style: const TextStyle(color: Colors.black), overflow: TextOverflow.ellipsis, maxLines: 1, softWrap: false)) ).toList(),
+              onChanged: (value) {
+                setState(() {
+                  membership = value!;
+                  _saveUserData();
+                });
+              },
+              decoration: InputDecoration(
+                border: OutlineInputBorder(
+                  borderSide: const BorderSide(color: Colors.black, width: 2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                filled: true,
+                fillColor: Colors.white,
+              ),
+              dropdownColor: Colors.white,
+            ),
           ),
         ],
       ),

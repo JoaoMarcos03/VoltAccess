@@ -41,95 +41,110 @@ class _RegisterViewState extends State<RegisterView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: SingleChildScrollView( // Dodajemy scrollowanie
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
+      backgroundColor: Colors.white, // Białe tło
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 30.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // TextField do wprowadzania emaila
-              TextField(
-                controller: _email,
-                autocorrect: false,
-                keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(
-                  labelText: "Email",
-                  hintText: "Enter your email",
-                  border: OutlineInputBorder(),
+              // Logo na środku (jak w LoginView)
+              Center(
+                child: Image.asset(
+                  'lib/logo.webp',
+                  height: 100,
                 ),
               ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _name,
-                autocorrect: false,
-                decoration: const InputDecoration(
-                  labelText: "Name",
-                  hintText: "Enter your first name",
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _surname,
-                autocorrect: false,
-                decoration: const InputDecoration(
-                  labelText: "Surname",
-                  hintText: "Enter your surname",
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _phone,
-                autocorrect: false,
-                keyboardType: TextInputType.phone,
-                decoration: const InputDecoration(
-                  labelText: "Phone number",
-                  hintText: "Enter your phone number",
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _password,
-                obscureText: true,
-                enableSuggestions: false,
-                autocorrect: false,
-                decoration: const InputDecoration(
-                  labelText: "Password",
-                  hintText: "Enter your password",
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 40),
+
+              // Pola rejestracji
+              _buildTextField(_email, "Email", "Enter your email"),
+              const SizedBox(height: 15),
+
+              _buildTextField(_name, "Name", "Enter your first name"),
+              const SizedBox(height: 15),
+
+              _buildTextField(_surname, "Surname", "Enter your surname"),
+              const SizedBox(height: 15),
+
+              _buildTextField(_phone, "Phone number", "Enter your phone number", isPhone: true),
+              const SizedBox(height: 15),
+
+              _buildTextField(_password, "Password", "Enter your password", isPassword: true),
+              const SizedBox(height: 30),
+
+              // Czarny przycisk "Register"
               ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.black,
+                  padding: const EdgeInsets.symmetric(vertical: 15),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
                 onPressed: () {
-                  // After registration, navigate to the LicenseUploadPage
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => const LicenseUploadPage()),
                   );
                 },
-                child: const Text('Register'),
+                child: const Text('Register', style: TextStyle(color: Colors.white, fontSize: 18)),
               ),
               const SizedBox(height: 20),
+
+              // Szary przycisk "Login"
               ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.grey[300],
+                  padding: const EdgeInsets.symmetric(vertical: 15),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
                 onPressed: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => const LoginView(title: 'Login')),
                   );
                 },
-                child: const Text('Login'),
+                child: const Text('Login', style: TextStyle(color: Colors.black, fontSize: 18)),
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildTextField(TextEditingController controller, String label, String hint, {bool isPassword = false, bool isPhone = false}) {
+    return TextField(
+      controller: controller,
+      obscureText: isPassword,
+      autocorrect: false,
+      enableSuggestions: !isPassword,
+      keyboardType: isPhone ? TextInputType.phone : (isPassword ? TextInputType.text : TextInputType.emailAddress),
+      cursorColor: Colors.black, // Czarny kursor
+      decoration: InputDecoration(
+        labelText: label,
+        hintText: hint,
+        filled: true,
+        fillColor: Colors.grey[200], // Jasnoszare tło pola tekstowego
+        contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 15),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: Colors.black, width: 2), // Czarna ramka
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: Colors.black, width: 2), // Czarna ramka gdy nie kliknięte
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: Colors.black, width: 2), // Czarna ramka gdy kliknięte
+        ),
+      ),
+      style: const TextStyle(color: Colors.black), // Czarny tekst w polu
     );
   }
 }

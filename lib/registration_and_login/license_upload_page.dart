@@ -1,10 +1,10 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:voltaccess/registration_and_login/add_card.dart';
+import 'package:voltaccess/registration_and_login/add_card.dart'; // Import AddCardPage
 
 class LicenseUploadPage extends StatefulWidget {
-  const LicenseUploadPage({Key? key}) : super(key: key);
+  const LicenseUploadPage({super.key});
 
   @override
   _LicenseUploadPageState createState() => _LicenseUploadPageState();
@@ -19,7 +19,7 @@ class _LicenseUploadPageState extends State<LicenseUploadPage> {
 
     if (pickedFile != null) {
       setState(() {
-        _licenseImage = File(pickedFile.path);  // Zapisz ścieżkę obrazu
+        _licenseImage = File(pickedFile.path);
       });
     }
   }
@@ -27,36 +27,76 @@ class _LicenseUploadPageState extends State<LicenseUploadPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Upload License Image'),
-      ),
-      body: SingleChildScrollView( // Dodajemy scrollowanie, aby unikać overflow
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
+      backgroundColor: Colors.white, // Białe tło
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 30.0),
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _pickLicenseImage,
-                child: const Text('Take a Picture of Your License'),
+              // Logo na środku (jak w AddCardPage)
+              Center(
+                child: Image.asset(
+                  'lib/logo.webp',
+                  height: 80, 
+                ),
               ),
-              const SizedBox(height: 20),
-              _licenseImage != null
-                  ? Image.file(_licenseImage!)  // Wyświetl obrazek jeśli istnieje
-                  : const Text('No image selected.'),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  // Po zarejestrowaniu użytkownika przekierowujemy do strony dodawania karty
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const AddCardPage()),
-                  );
-                },
-                child: const Text('Submit'),
-              ),
+              const SizedBox(height: 40),
 
+              // Placeholder na zdjęcie prawa jazdy (w stylu pól tekstowych)
+              GestureDetector(
+                onTap: _pickLicenseImage,
+                child: Container(
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[200], // Jasnoszare tło, jak pola tekstowe
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.black, width: 2), // Czarna ramka
+                  ),
+                  child: Center(
+                    child: Text(
+                      _licenseImage == null ? "Upload License Image" : "Image Selected",
+                      style: const TextStyle(color: Colors.black),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 15),
+
+              // Czarny przycisk "Submit"
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.black,
+                  padding: const EdgeInsets.symmetric(vertical: 15),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                onPressed: () {
+                  if (_licenseImage != null) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const AddCardPage()),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: const Text(
+                          "Please upload an image first",
+                          style: TextStyle(color: Colors.white), // Biały tekst
+                        ),
+                        backgroundColor: Colors.grey[850], // Ciemnoszare tło
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  }
+                },
+                child: const Text(
+                  'Submit',
+                  style: TextStyle(color: Colors.white, fontSize: 18),
+                ),
+              ),
             ],
           ),
         ),
