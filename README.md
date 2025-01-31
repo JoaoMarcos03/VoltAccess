@@ -1,5 +1,3 @@
----
-
 # VoltAccess 🚗⚡
 
 **VoltAccess** is a Flutter-based mobile application designed to simplify car-sharing experiences. It enables users to find, rent, and manage electric cars seamlessly. The app integrates features such as user authentication, car mapping, rental tracking, and payment processing, delivering a modern and eco-friendly solution for urban mobility.
