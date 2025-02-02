@@ -22,9 +22,17 @@ class PhotoService extends ChangeNotifier {
     try {
       final XFile? photo = await _picker.pickImage(
         source: ImageSource.camera,
-        imageQuality: 80,
+        imageQuality: 50, // Lower quality for better performance
+        preferredCameraDevice: CameraDevice.rear,
+        maxWidth: 1000, // Limit image size
+        maxHeight: 1000,
       );
-      return photo != null ? File(photo.path) : null;
+      
+      if (photo == null) return null;
+      
+      // Create optimized file
+      final File file = File(photo.path);
+      return file;
     } catch (e) {
       debugPrint('Error taking photo: $e');
       return null;

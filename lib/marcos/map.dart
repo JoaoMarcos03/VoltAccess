@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import 'services/location_service.dart';
 import 'services/car_service.dart';
 import 'services/rental_service.dart';
+import 'services/user_service.dart';
+import 'models/membership.dart';
 import 'widgets/photo_check_widget.dart';
 
 /// Main screen showing available cars on map and handling rental interactions
@@ -36,23 +38,34 @@ class _RentingCarsPageState extends State<RentingCarsPage> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (dialogContext) => _buildRentalDialog(car, isNearby),
-    );
-  }
-
-  /// Builds the rental control dialog content
-  Widget _buildRentalDialog(Map<String, dynamic> car, bool isNearby) {
-    return WillPopScope(
-      onWillPop: () async => false,
-      child: Consumer<RentalService>(
-        builder: (context, rentalService, _) {
+      builder: (dialogContext) => Consumer2<UserService, RentalService>(
+        builder: (context, userService, rentalService, _) {
           final isCurrentCar = rentalService.currentCarId == car['id'];
           final isActiveRental = rentalService.isRenting && isCurrentCar;
 
           return AlertDialog(
-            title: Text(car['name']),
+            title: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(car['name']),
+                Text(
+                  userService.membershipInfo,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.normal,
+                  ),
+                ),
+              ],
+            ),
             content: _buildDialogContent(rentalService, isActiveRental),
-            actions: _buildDialogActions(context, car, isNearby, rentalService, isCurrentCar, isActiveRental),
+            actions: _buildDialogActions(
+              context, 
+              car, 
+              isNearby, 
+              rentalService,
+              isCurrentCar,
+              isActiveRental,
+            ),
           );
         },
       ),
@@ -198,6 +211,7 @@ class _RentingCarsPageState extends State<RentingCarsPage> {
   }
 
   void _showRentalSummary(BuildContext context, double cost, int seconds) {
+    final userService = Provider.of<UserService>(context, listen: false);
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -209,11 +223,16 @@ class _RentingCarsPageState extends State<RentingCarsPage> {
           children: [
             Text('Duration: ${_formatDuration(seconds)}'),
             Text('Total cost: €${cost.toStringAsFixed(2)}'),
+            if (userService.currentMembership != MembershipType.payAsYouGo)
+              Text(
+                'Free time remaining: ${userService.formatDuration(userService.remainingFreeSeconds)}',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
           ],
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(), // Just close the summary dialog
+            onPressed: () => Navigator.of(context).pop(),
             child: const Text('OK'),
           ),
         ],
@@ -224,7 +243,33 @@ class _RentingCarsPageState extends State<RentingCarsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Renting Cars')),
+      appBar: AppBar(
+        title: const Text('Renting Cars'),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(40),
+          child: Consumer2<UserService, RentalService>(
+            builder: (context, userService, rentalService, _) {
+              String info = userService.membershipInfo;
+              if (rentalService.isRenting) {
+                final remainingSeconds = userService.remainingFreeSeconds - rentalService.elapsedSeconds;
+                info += ' (${userService.formatDuration(remainingSeconds)})';
+              }
+              
+              return Container(
+                padding: const EdgeInsets.all(8),
+                color: Colors.black87,
+                child: Text(
+                  info,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ),
       body: Consumer3<LocationService, CarService, RentalService>(
         builder: _buildMapContent,
       ),

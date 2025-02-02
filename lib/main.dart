@@ -5,6 +5,7 @@ import 'marcos/services/location_service.dart';
 import 'marcos/services/car_service.dart';
 import 'marcos/services/rental_service.dart';
 import 'marcos/services/photo_service.dart';
+import 'marcos/services/user_service.dart';
 
 void main() {
   runApp(
@@ -13,9 +14,11 @@ void main() {
         ChangeNotifierProvider(create: (_) => LocationService()),
         ChangeNotifierProvider(create: (_) => CarService()),
         ChangeNotifierProvider(create: (_) => PhotoService()),
+        ChangeNotifierProvider(create: (_) => UserService()),
         ChangeNotifierProvider(create: (context) => RentalService(
           context.read<CarService>(),
           context.read<PhotoService>(),
+          context.read<UserService>(),
         )),
       ],
       child: const MyApp(),
@@ -30,13 +33,13 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'VoltAccess',
       theme: ThemeData(
 
         colorScheme: ColorScheme.fromSeed(seedColor: const Color.fromARGB(255, 0, 0, 0)),
         useMaterial3: true,
       ),
-      home: const LoginView(title: 'Flutter Demo Home Page'),
+      home: const LoginView(title: 'VoltAccess'),
     );
   }
 }

@@ -5,6 +5,7 @@ import '../models/ride_history.dart';
 import 'car_service.dart';
 import 'photo_service.dart';
 import '../models/membership.dart';
+import 'user_service.dart';
 
 /// Manages the car rental state and timing functionality.
 /// Handles starting/stopping rentals and calculates costs in real-time.
@@ -13,10 +14,11 @@ class RentalService extends ChangeNotifier {
   final List<RideHistory> _rideHistory = [];
   final CarService _carService;
   final PhotoService _photoService;
+  final UserService _userService;
   final MembershipType _membershipType = MembershipType.payAsYouGo; // TODO: Implement membership management
   
   // Constructor injection
-  RentalService(this._carService, this._photoService);
+  RentalService(this._carService, this._photoService, this._userService);
   
   // Rental state
   bool _isRenting = false;
@@ -73,6 +75,11 @@ class RentalService extends ChangeNotifier {
     if (_isRenting) {
       _isRenting = false;
       _timer?.cancel();
+      
+      // Update used minutes with proper rounding
+      final usedMinutes = (_elapsedSeconds / 60).ceil();
+      _userService.addUsedMinutes(usedMinutes);
+      
       final cost = currentCost;
       
       // Get car details with null check

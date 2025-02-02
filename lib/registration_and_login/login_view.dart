@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:voltaccess/registration_and_login/register_view.dart';
 import 'package:voltaccess/registration_and_login/home_page.dart';
+import '../marcos/services/user_service.dart';
+import '../marcos/models/membership.dart';
 
 class LoginView extends StatefulWidget {
   final String title;
@@ -27,6 +30,24 @@ class _LoginViewState extends State<LoginView> {
     _email.dispose();
     _password.dispose();
     super.dispose();
+  }
+
+  void _handleLogin(BuildContext context, String email, String password) {
+    if (UserService.testUsers.containsKey(email) &&
+        UserService.testUsers[email]!['password'] == password) {
+      
+      final userService = Provider.of<UserService>(context, listen: false);
+      userService.loginUser(email);
+      
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomePage()),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Invalid credentials')),
+      );
+    }
   }
 
   @override
@@ -70,25 +91,7 @@ class _LoginViewState extends State<LoginView> {
                   final email = _email.text;
                   final password = _password.text;
 
-                  if (email == "test@example.com" && password == "password123") {
-                    // Symulacja udanego logowania: Przejście do HomePage
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const HomePage()),
-                    );
-                  } else {
-                    // Symulacja nieudanego logowania
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: const Text(
-                          "Invalid email or password.",
-                          style: TextStyle(color: Colors.white), // Biały tekst
-                        ),
-                        backgroundColor: Colors.grey[850], // Ciemnoszare tło
-                        behavior: SnackBarBehavior.floating,
-                      ),
-                    );
-                  }
+                  _handleLogin(context, email, password);
                 },
                 child: const Text('Login', style: TextStyle(color: Colors.white, fontSize: 18)),
               ),
