@@ -16,7 +16,7 @@ if (localPropertiesFile.exists()) {
 android {
     namespace = "com.example.voltaccess"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    ndkVersion = "25.1.8937393"  // Updated NDK version
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -36,8 +36,10 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        multiDexEnabled true
         manifestPlaceholders = [
-            mapsApiKey: localProperties.getProperty('MAPS_API_KEY', "")
+            mapsApiKey: localProperties.getProperty('MAPS_API_KEY', ""),
+            applicationName: "io.flutter.app.FlutterApplication"  // Changed this line
         ]
     }
 
@@ -52,4 +54,8 @@ android {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    implementation "androidx.multidex:multidex:2.0.1"  // Add this line
 }

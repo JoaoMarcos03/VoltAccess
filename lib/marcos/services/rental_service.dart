@@ -35,9 +35,10 @@ class RentalService extends ChangeNotifier {
   
   /// Calculates the current cost based on elapsed time and membership type
   double get currentCost => _pricingService.calculateRentalCost(
-    _elapsedSeconds,  // Pass seconds directly instead of converting to minutes
-    _membershipType,
+    _elapsedSeconds,
+    _userService.currentMembership,
     _startTime ?? DateTime.now(),
+    _userService.remainingFreeSeconds,
   );
 
   // Add getters for pricing information
@@ -76,11 +77,19 @@ class RentalService extends ChangeNotifier {
       _isRenting = false;
       _timer?.cancel();
       
-      // Update used minutes with proper rounding
-      final usedMinutes = (_elapsedSeconds / 60).ceil();
-      _userService.addUsedMinutes(usedMinutes);
+      // Get exact time used in seconds
+      final usedSeconds = _elapsedSeconds;
+      final cost = _pricingService.calculateRentalCost(
+        usedSeconds,
+        _userService.currentMembership,
+        _startTime!,
+        _userService.remainingFreeSeconds + usedSeconds, // Add used seconds back to get initial free seconds
+      );
       
-      final cost = currentCost;
+      // Only update free time if user has a subscription
+      if (_userService.currentMembership != MembershipType.payAsYouGo) {
+        _userService.addUsedSeconds(usedSeconds);
+      }
       
       // Get car details with null check
       final car = _carService.getCarById(_currentCarId!);

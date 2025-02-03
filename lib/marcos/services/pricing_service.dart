@@ -2,23 +2,24 @@ import 'dart:math';
 import '../models/membership.dart';
 
 class PricingService {
-  // €0.30 per minute = €0.005 per second (0.30/60)
   static const double PER_MINUTE_RATE = 0.30;
-  static const double PER_SECOND_RATE = PER_MINUTE_RATE / 60; // Equals 0.005 euros per second
+  static const double PER_SECOND_RATE = PER_MINUTE_RATE / 60;
   static const double DAILY_CAP = 20.0;
   static const double DEPOSIT_AMOUNT = 100.0;
 
-  double calculateRentalCost(int seconds, MembershipType membershipType, DateTime startTime) {
-    // First, check if seconds are covered by membership free minutes
-    final freeSecondsRemaining = _calculateRemainingFreeSeconds(membershipType, startTime);
-    final paidSeconds = seconds > freeSecondsRemaining ? 
-                       seconds - freeSecondsRemaining : 0;
+  double calculateRentalCost(int totalSeconds, MembershipType membershipType, DateTime startTime, int remainingFreeSeconds) {
+    if (membershipType == MembershipType.payAsYouGo) {
+      return min((totalSeconds * PER_SECOND_RATE), DAILY_CAP);
+    }
 
-    // Calculate base cost using seconds (€0.30 per minute = €0.005 per second)
-    double cost = (paidSeconds * PER_SECOND_RATE);
+    // If we have enough free time, cost is 0
+    if (remainingFreeSeconds >= totalSeconds) {
+      return 0.0;
+    }
 
-    // Apply daily cap if applicable
-    return min(cost, DAILY_CAP);
+    // Calculate cost only for seconds after free time is used
+    int paidSeconds = totalSeconds - remainingFreeSeconds;
+    return min((paidSeconds * PER_SECOND_RATE), DAILY_CAP);
   }
 
   int _calculateRemainingFreeSeconds(MembershipType membershipType, DateTime startTime) {
@@ -28,7 +29,6 @@ class PricingService {
 
     final membership = Membership.plans[membershipType]!;
     final weekStart = startTime.subtract(Duration(days: startTime.weekday - 1));
-    // Convert free minutes to seconds
     return membership.freeMinutesPerWeek * 60;
   }
 

@@ -5,7 +5,7 @@ import '../models/user_profile.dart';
 class UserService extends ChangeNotifier {
   UserProfile? _currentUser;
   MembershipType _currentMembership = MembershipType.payAsYouGo;
-  int _usedMinutesThisWeek = 0;
+  int _usedSecondsThisWeek = 0;  // Changed from minutes to seconds
 
   // Test users with different memberships and profiles
   static final Map<String, Map<String, dynamic>> testUsers = {
@@ -47,11 +47,15 @@ class UserService extends ChangeNotifier {
   // Getters
   UserProfile? get currentUser => _currentUser;
   MembershipType get currentMembership => _currentMembership;
-  int get usedMinutesThisWeek => _usedMinutesThisWeek;
+  int get usedMinutesThisWeek => _usedSecondsThisWeek ~/ 60;
   
-  int get remainingFreeSeconds {
+  int get totalFreeSeconds {
     final plan = Membership.plans[_currentMembership]!;
-    return (plan.freeMinutesPerWeek * 60) - (_usedMinutesThisWeek * 60);
+    return plan.freeMinutesPerWeek * 60; // Convert minutes to seconds
+  }
+
+  int get remainingFreeSeconds {
+    return totalFreeSeconds - _usedSecondsThisWeek;
   }
 
   String formatDuration(int totalSeconds) {
@@ -77,26 +81,58 @@ class UserService extends ChangeNotifier {
     if (userInfo != null) {
       _currentUser = userInfo['profile'] as UserProfile;
       _currentMembership = _currentUser!.defaultMembership;
-      _usedMinutesThisWeek = 0;
+      _usedSecondsThisWeek = 0;
       notifyListeners();
     }
   }
 
   void updateMembership(MembershipType newType) {
     _currentMembership = newType;
-    _usedMinutesThisWeek = 0;
+    _usedSecondsThisWeek = 0;  // Reset seconds instead of minutes
     notifyListeners();
   }
 
-  void addUsedMinutes(int minutes) {
-    _usedMinutesThisWeek += minutes;
-    notifyListeners();
+  void addUsedSeconds(int seconds) {
+    if (_currentMembership != MembershipType.payAsYouGo) {
+      // Ensure we don't subtract more than available free time
+      final actualSecondsToAdd = seconds.clamp(0, totalFreeSeconds);
+      _usedSecondsThisWeek += actualSecondsToAdd;
+      notifyListeners();
+    }
   }
 
   void logout() {
     _currentUser = null;
     _currentMembership = MembershipType.payAsYouGo;
-    _usedMinutesThisWeek = 0;
+    _usedSecondsThisWeek = 0;  // Reset seconds
     notifyListeners();
+  }
+
+  void updateUserInfo({
+    String? name,
+    String? email,
+    String? phoneNumber,
+    String? dateOfBirth,
+    String? creditCard,
+  }) {
+    if (_currentUser != null) {
+      final updatedProfile = UserProfile(
+        email: email ?? _currentUser!.email,
+        name: name ?? _currentUser!.name,
+        phoneNumber: phoneNumber ?? _currentUser!.phoneNumber,
+        creditCard: creditCard ?? _currentUser!.creditCard,
+        dateOfBirth: dateOfBirth ?? _currentUser!.dateOfBirth,
+        defaultMembership: _currentUser!.defaultMembership,
+      );
+
+      // Update test user data to persist changes during session
+      testUsers[_currentUser!.email] = {
+        'password': testUsers[_currentUser!.email]!['password'],
+        'profile': updatedProfile,
+      };
+
+      _currentUser = updatedProfile;
+      notifyListeners();
+    }
   }
 }

@@ -38,12 +38,23 @@ class _RentingCarsPageState extends State<RentingCarsPage> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (dialogContext) => Consumer2<UserService, RentalService>(
+      builder: (dialogContext) => _buildRentalDialog(car, isNearby),
+    );
+  }
+
+  Widget _buildRentalDialog(Map<String, dynamic> car, bool isNearby) {
+    return WillPopScope(
+      onWillPop: () async => false,
+      child: Consumer2<UserService, RentalService>(
         builder: (context, userService, rentalService, _) {
           final isCurrentCar = rentalService.currentCarId == car['id'];
           final isActiveRental = rentalService.isRenting && isCurrentCar;
 
           return AlertDialog(
+            titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+            contentPadding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
+            actionsPadding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
+            insetPadding: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
             title: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -59,9 +70,9 @@ class _RentingCarsPageState extends State<RentingCarsPage> {
             ),
             content: _buildDialogContent(rentalService, isActiveRental),
             actions: _buildDialogActions(
-              context, 
-              car, 
-              isNearby, 
+              context,
+              car,
+              isNearby,
               rentalService,
               isCurrentCar,
               isActiveRental,
@@ -99,24 +110,34 @@ class _RentingCarsPageState extends State<RentingCarsPage> {
       RentalService rentalService, bool isCurrentCar, bool isActiveRental) {
     return [
       if (!isNearby)
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-              const Text(
-                'Get closer to rent this car',
-                style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+        Container(
+          width: double.infinity,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: const Text(
+                  'Get closer to rent this car',
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
               TextButton(
                 onPressed: () => Navigator.pop(context),
                 style: TextButton.styleFrom(
-                  foregroundColor: const Color.fromARGB(255, 78, 78, 78), // Szary tekst
-                  padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
+                  foregroundColor: const Color.fromARGB(255, 78, 78, 78),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 14,
+                    horizontal: 16, // Reduced horizontal padding
+                  ),
                 ),
                 child: const Text('Close'),
               ),
             ],
-
-                    )
+          ),
+        )
       else if (!rentalService.isRenting)
         Row(
           mainAxisAlignment: MainAxisAlignment.end,

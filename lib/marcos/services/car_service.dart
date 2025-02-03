@@ -47,6 +47,12 @@ class CarService extends ChangeNotifier {
       'lat': 41.11973531818157,
       'lng': -8.623497826735035,
     },
+	{
+      'id': 'car_7',
+      'name': 'Citroën AMI 7',
+      'lat': 41.05182132576213,
+      'lng': -8.61397927499262,
+    },
   ];
 
   // Active markers on the map
